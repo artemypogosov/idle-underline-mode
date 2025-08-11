@@ -230,7 +230,9 @@ Argument VISIBLE-RANGES is a list of (min . max) ranges to underline."
   (idle-underline--ununderline)
   (save-excursion
     (save-match-data
-      (let ((target-regexp (concat "\\_<" (regexp-quote target) "\\_>")))
+      ;; Disable case folding so "Image" won't match "image"
+      (let ((case-fold-search nil)
+            (target-regexp (concat "\\_<" (regexp-quote target) "\\_>")))
         (pcase-dolist (`(,beg . ,end) visible-ranges)
           (goto-char beg)
           (while (re-search-forward target-regexp end t)
@@ -242,6 +244,7 @@ Argument VISIBLE-RANGES is a list of (min . max) ranges to underline."
                 (let ((ov (make-overlay match-beg match-end)))
                   (overlay-put ov 'face 'idle-underline)
                   (push ov idle-underline--overlays))))))))))
+
 
 (defun idle-underline--word-at-point-args ()
   "Return arguments for `idle-underline--underline'."
