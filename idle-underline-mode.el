@@ -421,7 +421,9 @@ should be the result of `idle-underline--word-at-point-args'."
 (defun idle-underline--enable ()
   "Enable the buffer local minor mode."
   (declare (important-return-value nil))
+  (idle-underline--set-default-exceptions)
   (idle-underline--time-buffer-local-enable))
+
 
 (defun idle-underline--disable ()
   "Disable the buffer local minor mode."
@@ -429,6 +431,21 @@ should be the result of `idle-underline--word-at-point-args'."
   (idle-underline--time-buffer-local-disable)
   (idle-underline--ununderline)
   (kill-local-variable 'idle-underline--overlays))
+
+(defun idle-underline--set-default-exceptions ()
+  "Set default exceptions for idle-underline-mode based on the current major mode."
+  (cond
+   ;; JavaScript / TypeScript
+   ((derived-mode-p 'js-mode 'js2-mode 'rjsx-mode 'typescript-mode 'tsx-mode)
+    (setq-local idle-underline-exceptions
+                '("import" "from" "export" "const" "let" "var" "function" "return")))
+   ;; Python
+   ((derived-mode-p 'python-mode)
+    (setq-local idle-underline-exceptions
+                '("list" "tuple" "int" "float" "str" "bool")))
+   ;; Default
+   (t
+    (setq-local idle-underline-exceptions nil))))
 
 (defun idle-underline--turn-on ()
   "Enable command `idle-underline-mode'."
