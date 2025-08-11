@@ -260,14 +260,21 @@ Argument VISIBLE-RANGES is a list of (min . max) ranges to underline."
 (defun idle-underline--word-at-point-underline (target target-range visible-ranges)
   "Highlight the word under the point across all VISIBLE-RANGES.
 
-Arguments TARGET and TARGET-RANGE
-should be the result of `idle-underline--word-at-point-args'."
+Only highlight if TARGET occurs more than once in the buffer."
   (declare (important-return-value nil))
   (idle-underline--ununderline)
   (when target
     (pcase-let ((`(,target-beg . ,target-end) target-range))
-      (idle-underline--underline target target-beg target-end visible-ranges))))
-
+      (let ((case-fold-search nil) ;; respect case sensitivity
+            (target-regexp (concat "\\_<" (regexp-quote target) "\\_>")))
+        (save-excursion
+          (goto-char (point-min))
+          (let ((count 0))
+            (while (re-search-forward target-regexp nil t)
+              (setq count (1+ count)))
+            ;; Only underline if found more than once
+            (when (> count 1)
+              (idle-underline--underline target target-beg target-end visible-ranges))))))))
 
 ;; ---------------------------------------------------------------------------
 ;; Internal Timer Management
